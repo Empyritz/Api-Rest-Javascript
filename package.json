@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Empyritz/Api-Rest-Javascript/issues"
   },
-  "homepage": "https://github.com/Empyritz/Api-Rest-Javascript#readme"
+  "homepage": "https://github.com/Empyritz/Api-Rest-Javascript#readme",
+  "devDependencies": {
+    "prettier": "^2.7.1"
+  }
 }
