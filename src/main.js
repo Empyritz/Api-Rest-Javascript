@@ -8,8 +8,12 @@ const api = axios.create({
   }
 })
 
-function mapList(arr, container) {
-  arr.forEach(item => {
+function createMovies(data, container) {
+  container.innerHTML = ""
+
+  const { results } = data
+
+  results.forEach(item => {
     const movieContainer = document.createElement('div')
     movieContainer.classList.add('movie-container')
     
@@ -17,29 +21,17 @@ function mapList(arr, container) {
     movieImg.classList.add('movie-img')
     movieImg.setAttribute('alt', item.title) 
     movieImg.setAttribute('src', `https://image.tmdb.org/t/p/w300${item.poster_path}`) 
+    movieImg.addEventListener('click', () => {
+      location.hash = 'movie=' + item.id
+    })
 
     movieContainer.appendChild(movieImg)
     container.appendChild(movieContainer)
   })
 }
 
-async function getTrendingMoviesPreview() {
-  const {data} = await api('trending/movie/day')
-
-  trendingMoviesPreviewList.innerHTML = ""
-
-  const movies = data.results
-  console.log(movies)
-  mapList(movies, trendingMoviesPreviewList)
-
-}
-
-async function getCategoriesPreview() {
-  const {data} = await api('genre/movie/list')
-
-  categoriesPreviewList.innerHTML = ""
-
-  const categories = data.genres
+function createCategories(categories, container) {
+  container.innerHTML = ""
   
   categories.forEach(category => {
     const categoryContainer = document.createElement('div')
@@ -55,9 +47,20 @@ async function getCategoriesPreview() {
 
     categoryTitle.appendChild(categoryTitleText)
     categoryContainer.appendChild(categoryTitle)
-    categoriesPreviewList.appendChild(categoryContainer)
+    container.appendChild(categoryContainer)
 
   });
+}
+
+async function getTrendingMoviesPreview() {
+  const {data} = await api('trending/movie/day')
+  createMovies(data, trendingMoviesPreviewList)
+}
+
+async function getCategoriesPreview() {
+  const {data} = await api('genre/movie/list')
+  const categories = data.genres
+  createCategories(categories ,categoriesPreviewList)
 }
 
 async function getMoviesByCategory(id) {
@@ -66,11 +69,48 @@ async function getMoviesByCategory(id) {
       with_genres: id
     }
   })
+  createMovies(data, genericSection)
+}
 
-  genericSection.innerHTML = ""
+async function getMoviesBySearch(query) {
+  const {data} = await api('search/movie', {
+    params: {
+      query
+    }
+  })
+  createMovies(data, genericSection)
+}
 
-  const movies = data.results
-  console.log(movies)
-  mapList(movies, genericSection)
+async function getTrendingMovies() {
+  const {data} = await api('trending/movie/day')
+  createMovies(data, genericSection)
+}
+
+async function getMovieById(id) {
+  const {data: movie} = await api('movie/' + id)
+
+  const url = `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+  headerSection.style.background = `
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.35) 19.27%,
+      rgba(0, 0, 0, 0) 29.17%
+    ),
+    url(${url})
+  `
+
+  movieDetailTitle.textContent = movie.title
+  movieDetailDescription.textContent = movie.overview
+  movieDetailScore.textContent = movie.vote_average
+
+  createCategories(movie.genres, movieDetailCategoriesList)
+
+  getRelatedMoviesId(id)
+}
+
+async function getRelatedMoviesId(id) {
+  const { data } = await api('movie/' + id + '/recommendations')
+
+  createMovies(data, relatedMoviesContainer)
 
 }

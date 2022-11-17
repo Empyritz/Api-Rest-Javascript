@@ -1,11 +1,12 @@
 searchFormBtn.addEventListener('click', () => {
-  location.hash = 'search='
+  location.hash = 'search=' + searchFormInput.value
 })
 trendingBtn.addEventListener('click', () => {
   location.hash = 'trends'
 })
 arrowBtn.addEventListener('click', () => {
-  location.hash = 'home'
+  history.back()
+  // location.hash = 'home'
 })
 
 window.addEventListener('DOMContentLoaded', navigator, false)
@@ -25,6 +26,9 @@ function navigator() {
   }else {
     homePage()
   }
+
+  // document.body.scrollTop = 0
+  document.documentElement.scrollTop = 0
 }
 
 function homePage() {
@@ -80,9 +84,9 @@ function movieDetailsPage() {
   // headerSection.style.background = ''
   
   arrowBtn.classList.remove('inactive')
-  arrowBtn.classList.add('header-arrow--white')
   movieDetailSection.classList.remove('inactive')
-
+  
+  arrowBtn.classList.add('header-arrow--white')
   headerTitle.classList.add('inactive')
   headerCategoryTitle.classList.add('inactive')
   searchForm.classList.add('inactive')
@@ -90,19 +94,25 @@ function movieDetailsPage() {
   categoriesPreviewSection.classList.add('inactive')
   genericSection.classList.add('inactive')
 
+  const [_, id] = location.hash.split('=')
+  getMovieById(id)
+
 }
 
-function searchPage() {
+async function searchPage() {
   
+  const [_, query] = location.hash.split('=')
+  await getMoviesBySearch(query)
+
   headerSection.classList.remove('header-container--long')
   headerSection.style.background = ''
   
   arrowBtn.classList.remove('inactive')
-  headerCategoryTitle.classList.remove('inactive')
   genericSection.classList.remove('inactive')
-  
   arrowBtn.classList.remove('header-arrow--white')
-
+  
+  
+  headerCategoryTitle.classList.add('inactive')
   movieDetailSection.classList.add('inactive')
   trendingPreviewSection.classList.add('inactive')
   categoriesPreviewSection.classList.add('inactive')
@@ -126,4 +136,7 @@ function trendsPage() {
   categoriesPreviewSection.classList.add('inactive')
   headerTitle.classList.add('inactive')
   searchForm.classList.add('inactive')
+
+  headerCategoryTitle.innerText = 'Trends'
+  getTrendingMovies()
 }
