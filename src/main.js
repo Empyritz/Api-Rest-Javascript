@@ -8,7 +8,21 @@ const api = axios.create({
   }
 })
 
-function createMovies(data, container) {
+// Utils
+
+const lazyLoader = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    console.log(entry)
+    const url = entry.target.getAttribute('data-img')
+    if(entry.isIntersecting){
+      entry.target.setAttribute('src', url)
+      lazyLoader.unobserve(entry.target)
+    }
+  })
+})
+
+function createMovies(data, container, lazyLoad = false) {
+
   container.innerHTML = ""
 
   const { results } = data
@@ -20,10 +34,16 @@ function createMovies(data, container) {
     const movieImg = document.createElement('img')
     movieImg.classList.add('movie-img')
     movieImg.setAttribute('alt', item.title) 
+    // movieImg.setAttribute(lazyLoad ? 'data-img' : 'src', `https://image.tmdb.org/t/p/w300${item.poster_path}`) 
     movieImg.setAttribute('src', `https://image.tmdb.org/t/p/w300${item.poster_path}`) 
+    movieImg.setAttribute('loading', 'lazy') 
     movieImg.addEventListener('click', () => {
       location.hash = 'movie=' + item.id
     })
+
+    // if(lazyLoad){
+    //   lazyLoader.observe(movieImg)
+    // }
 
     movieContainer.appendChild(movieImg)
     container.appendChild(movieContainer)
@@ -52,9 +72,12 @@ function createCategories(categories, container) {
   });
 }
 
+
+// Function Pages
+
 async function getTrendingMoviesPreview() {
   const {data} = await api('trending/movie/day')
-  createMovies(data, trendingMoviesPreviewList)
+  createMovies(data, trendingMoviesPreviewList, true)
 }
 
 async function getCategoriesPreview() {
@@ -111,6 +134,6 @@ async function getMovieById(id) {
 async function getRelatedMoviesId(id) {
   const { data } = await api('movie/' + id + '/recommendations')
 
-  createMovies(data, relatedMoviesContainer)
+  createMovies(data, relatedMoviesContainer, true)
 
 }
