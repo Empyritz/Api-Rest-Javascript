@@ -1,3 +1,7 @@
+let maxPage;
+let page = 1
+let infiniteScroll
+
 searchFormBtn.addEventListener('click', () => {
   location.hash = 'search=' + searchFormInput.value
 })
@@ -13,7 +17,14 @@ window.addEventListener('DOMContentLoaded', navigator, false)
 window.addEventListener('hashchange', navigator, false)
 
 function navigator() {
+page = 1
+
   console.log({ location })
+
+  if(infiniteScroll){
+    window.removeEventListener('scroll', infiniteScroll, {passive: false})
+    infiniteScroll = undefined
+  }
 
   if(location.hash.startsWith('#trends')){
     trendsPage()
@@ -29,6 +40,10 @@ function navigator() {
 
   // document.body.scrollTop = 0
   document.documentElement.scrollTop = 0
+
+  if(infiniteScroll) {
+    window.addEventListener('scroll', infiniteScroll, {passive: false})
+  }
 }
 
 function homePage() {
@@ -47,9 +62,12 @@ function homePage() {
   categoriesPreviewSection.classList.remove('inactive')
   headerTitle.classList.remove('inactive')
   searchForm.classList.remove('inactive')
+  likedSection.classList.remove('inactive')
   
   getTrendingMoviesPreview()
   getCategoriesPreview()
+  getLikedMovies()
+  checkLikedList()
 }
 
 function categoriesPage() {
@@ -63,6 +81,7 @@ function categoriesPage() {
   
   arrowBtn.classList.remove('header-arrow--white')
 
+  likedSection.classList.add('inactive')
   movieDetailSection.classList.add('inactive')
   trendingPreviewSection.classList.add('inactive')
   categoriesPreviewSection.classList.add('inactive')
@@ -76,6 +95,8 @@ function categoriesPage() {
   headerCategoryTitle.innerText = categoryName
   getMoviesByCategory(categoryId)
 
+  infiniteScroll = getPaginatedMoviesBySearch(id)
+
 }
 
 function movieDetailsPage() {
@@ -86,6 +107,7 @@ function movieDetailsPage() {
   arrowBtn.classList.remove('inactive')
   movieDetailSection.classList.remove('inactive')
   
+  likedSection.classList.add('inactive')
   arrowBtn.classList.add('header-arrow--white')
   headerTitle.classList.add('inactive')
   headerCategoryTitle.classList.add('inactive')
@@ -99,10 +121,10 @@ function movieDetailsPage() {
 
 }
 
-async function searchPage() {
+function searchPage() {
   
   const [_, query] = location.hash.split('=')
-  await getMoviesBySearch(query)
+  getMoviesBySearch(query)
 
   headerSection.classList.remove('header-container--long')
   headerSection.style.background = ''
@@ -111,13 +133,17 @@ async function searchPage() {
   genericSection.classList.remove('inactive')
   arrowBtn.classList.remove('header-arrow--white')
   
-  
+  likedSection.classList.add('inactive')
   headerCategoryTitle.classList.add('inactive')
   movieDetailSection.classList.add('inactive')
   trendingPreviewSection.classList.add('inactive')
   categoriesPreviewSection.classList.add('inactive')
   headerTitle.classList.add('inactive')
   searchForm.classList.remove('inactive')
+
+  // getPaginatedMoviesBySearch.query = query
+  // getPaginatedMoviesBySearch = getPaginatedMoviesBySearch.bind(getPaginatedMoviesBySearch)
+  infiniteScroll = getPaginatedMoviesBySearch(query)
 
 }
 
@@ -136,7 +162,11 @@ function trendsPage() {
   categoriesPreviewSection.classList.add('inactive')
   headerTitle.classList.add('inactive')
   searchForm.classList.add('inactive')
+  likedSection.classList.add('inactive')
 
   headerCategoryTitle.innerText = 'Trends'
+  
   getTrendingMovies()
+
+  infiniteScroll = getPaginatedTrendingMovies
 }
